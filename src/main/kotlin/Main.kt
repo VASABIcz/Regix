@@ -34,6 +34,17 @@ sealed interface Regix {
         }
     }
 
+    data class Not(val inner: Regix): Regix {
+        override fun match(str: String, captures: MutableList<MutableList<String>>): String? {
+            return if (inner.match(str, captures) == null) {
+                return str.first().toString()
+            } else{
+                null
+            }
+        }
+
+    }
+
     data class Group(val inner: List<Regix>): Regix {
         override fun match(str: String, captures: MutableList<MutableList<String>>): String? {
             val matched = StringBuilder()
@@ -242,6 +253,12 @@ sealed interface Regix {
                 spacing()
                 println("ANY")
             }
+
+            is Not -> {
+                spacing()
+                println("NOT")
+                inner.print(space+1)
+            }
         }
     }
 
@@ -302,6 +319,12 @@ fun parseRegix2(l: Lexer, previous: MutableList<Regix>, groups: Wrapper<Int>) {
             l.consume()
             Regix.Any
         }
+        '^' -> {
+            l.consume()
+            val p = mutableListOf<Regix>()
+            parseRegix2(l, p, groups)
+            Regix.Not(p.first())
+        }
         '\\' -> {
             l.consume()
             val peek = l.peek()?.first() ?: throw Throwable()
@@ -332,15 +355,19 @@ fun constructRegix2(l: Lexer): List<Regix> {
 }
 
 fun main() {
+    /*pepe*/
     val test = "-8588.9"
-    val res = constructRegix2(Lexer("(-|\\+)?(\\d*)\\.?(\\d*)"))
+    val test1 = "/*pepe*/"
+    val coment = "[/\\*](^[\\*/]+)[\\*/]"
+    val d = "(-|\\+)?(\\d*)\\.?(\\d*)"
+    val res = constructRegix2(Lexer(coment))
     res.forEach {
         it.print()
     }
     var capturedAmount = 0
     val cs = mutableListOf<MutableList<String>>()
     res.forEach {
-        val r = it.match(test.drop(capturedAmount), cs)
+        val r = it.match(test1.drop(capturedAmount), cs)
         capturedAmount += r!!.length
     }
     println(cs)
