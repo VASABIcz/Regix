@@ -62,6 +62,4 @@ Sec-Fetch-User=?1
 Sec-GPC=1
 Pragma=no-cache
 Cache-Control=no-cache
-
-Process finished with exit code 0
 ````
